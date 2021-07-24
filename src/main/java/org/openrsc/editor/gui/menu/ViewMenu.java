@@ -25,6 +25,8 @@ public class ViewMenu extends BaseMenu {
             Runnable onShowGroundLevel,
             Runnable onShowUpstairs,
             Runnable onShowSecondStory,
+            Runnable onUpOneFloor,
+            Runnable onDownOneFloor,
             Runnable onJumpToCoords
     ) {
         super("View");
@@ -57,6 +59,16 @@ public class ViewMenu extends BaseMenu {
         show2ndStory.setText("View 2nd Story");
         show2ndStory.addActionListener(GuiUtils.fromRunnable(onShowSecondStory));
         add(show2ndStory);
+
+        JMenuItem upOneFloor = new JMenuItem();
+        upOneFloor.setText("Up one floor");
+        upOneFloor.addActionListener(GuiUtils.fromRunnable(onUpOneFloor));
+        add(upOneFloor);
+
+        JMenuItem downOneFloor = new JMenuItem();
+        downOneFloor.setText("Down one floor");
+        downOneFloor.addActionListener(GuiUtils.fromRunnable(onDownOneFloor));
+        add(downOneFloor);
 
         addSeparator();
 

@@ -63,6 +63,18 @@ public class TileControlPanel extends JPanel {
                     return "Stamp Size (" + Util.stampSize + ")";
                 }
         );
+        addLabeledSlider(
+                "Intensity (" + Util.brushIntensity + ")",
+                Util.brushIntensity,
+                0,
+                100,
+                1,
+                false,
+                (updatedValue) -> {
+                    Util.brushIntensity = updatedValue;
+                    return "Intensity (" + Util.brushIntensity + ")";
+                }
+        );
         add(new JSeparator());
         add(getAddPropertyPanel());
 

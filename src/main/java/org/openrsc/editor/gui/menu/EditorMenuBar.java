@@ -31,6 +31,8 @@ public class EditorMenuBar extends JMenuBar {
                         Actions::onShowGroundLevel,
                         Actions::onShowUpstairs,
                         Actions::onShowSecondStory,
+                        Actions::onUpOneFloor,
+                        Actions::onDownOneFloor,
                         Actions::onJumpToCoords
                 )
         );

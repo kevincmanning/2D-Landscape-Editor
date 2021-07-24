@@ -1,10 +1,14 @@
 package org.openrsc.editor;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import org.apache.commons.io.FileUtils;
 import org.openrsc.editor.gui.graphics.EditorCanvas;
 import org.openrsc.editor.model.Tile;
 import org.openrsc.editor.model.data.GameObjectLoc;
 import org.openrsc.editor.model.data.ItemLoc;
 import org.openrsc.editor.model.data.NpcLoc;
+import org.openrsc.editor.serializer.WriteNumbersAsIntModule;
 
 import javax.swing.JOptionPane;
 import java.awt.Color;
@@ -15,12 +19,15 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -31,7 +38,12 @@ import java.util.zip.ZipOutputStream;
 public class Util {
 
     public static int stampSize = 5;
-    private static int fpsCount;
+    public static int brushIntensity = 100;
+    private static File workspace;
+    private static File sceneryLocsFile;
+    private static File boundaryLocsFile;
+    private static File npcLocsFile;
+    private static File itemLocsFile;
 
     /**
      * A utility method to find a tile in the grid based on a mouseClick. There
@@ -76,7 +88,6 @@ public class Util {
         int y = Integer.parseInt(splitter[1].trim());
 
         if (x != -1 && y != -1) {
-            int sector = 0;
             System.out.println(x + " " + y);
             if (y >= 0 && y <= 1007)
                 Util.sectorH = 0;
@@ -97,14 +108,6 @@ public class Util {
         }
     }
 
-    // Not used, below. Other method is a tad faster.
-    /*
-     * public static Tile findTile(Point p) { for(int i=0; i <
-     * Canvas.tileGrid.length; i++) for(int r=0; r < Canvas.tileGrid[i].length;
-     * r++) if(Canvas.tileGrid[i][r].getShape().getBounds().contains(p)) return
-     * Canvas.tileGrid[i][r]; return null; }
-     */
-
     public static boolean inCanvas(Point p) {
         return inCanvas(p.x, p.y);
     }
@@ -117,38 +120,6 @@ public class Util {
                 && y >= 0
                 && x < EditorCanvas.GRID_PIXEL_SIZE + EditorCanvas.TILE_SIZE
                 && y < EditorCanvas.GRID_PIXEL_SIZE;
-    }
-
-    /**
-     * Basic sleep method, to stop the CPU from rendering more than needed and
-     * killing the CPU.
-     */
-    public static void sleep() {
-        try {
-            Thread.sleep(THREAD_DELAY);
-        } catch (Exception e) {
-            error(e);
-        }
-    }
-
-    /**
-     * Synchronizes the FPS on the thread.
-     */
-    public static void syncFps() {
-        try {
-            fpsCount++;
-            if (lastMilli == 0) {
-                lastMilli = System.currentTimeMillis();
-            }
-            if (System.currentTimeMillis() - 1000 > lastMilli) {
-                Main.mainWindow.setTitle("RSC Community Landscape Editor" + " - " + " Sector: " + "h" + sectorH + "x"
-                        + sectorX + "y" + sectorY);
-                fpsCount = 0;
-                lastMilli = System.currentTimeMillis();
-            }
-        } catch (Exception e) {
-            error(e);
-        }
     }
 
     /**
@@ -174,6 +145,10 @@ public class Util {
         return ByteBuffer.wrap(buffer);
     }
 
+    public static int getBufferSize() {
+        return 10 * (EditorCanvas.GRID_SIZE * EditorCanvas.GRID_SIZE);
+    }
+
     /**
      * Unpack the data from the Landscape file to a ByteBuffer
      */
@@ -184,7 +159,8 @@ public class Util {
             if (e != null) {
                 buffer = streamToBuffer(new BufferedInputStream(tileArchive.getInputStream(e)));
             } else {
-                JOptionPane.showConfirmDialog(null, "Sorry, Wrong sector String specified.");
+                buffer = ByteBuffer.allocate(getBufferSize());
+                buffer.flip();
             }
         } catch (Exception e) {
             error(e);
@@ -192,7 +168,7 @@ public class Util {
     }
 
     public static ByteBuffer pack() throws IOException {
-        ByteBuffer out = ByteBuffer.allocate(10 * (EditorCanvas.GRID_SIZE * EditorCanvas.GRID_SIZE));
+        ByteBuffer out = ByteBuffer.allocate(getBufferSize());
 
         for (int i = 0; i < EditorCanvas.GRID_SIZE; i++) {
             for (int j = 0; j < EditorCanvas.GRID_SIZE; j++) {
@@ -224,17 +200,47 @@ public class Util {
 
             out.close();
             dest.close();
-            out = null;
-            dest = null;
 
             moveFile(file, new File(name));
-            file = null;
+            savePeripherals();
             Util.STATE = Util.State.LOADED;
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
         return true;
+    }
+
+    public static void savePeripherals() throws IOException {
+        if (workspace != null) {
+            ObjectWriter objectWriter = new ObjectMapper()
+                    .registerModule(new WriteNumbersAsIntModule())
+                    .writerWithDefaultPrettyPrinter();
+
+            try (FileWriter writer = new FileWriter(itemLocsFile, false)) {
+                ItemLoc.Wrapper wrapper = new ItemLoc.Wrapper();
+                wrapper.setGrounditems(itemLocationMap.values());
+                writer.write(objectWriter.writeValueAsString(wrapper));
+            }
+
+            try (FileWriter writer = new FileWriter(sceneryLocsFile, false)) {
+                GameObjectLoc.SceneryWrapper wrapper = new GameObjectLoc.SceneryWrapper();
+                wrapper.setSceneries(sceneryLocationMap.values());
+                writer.write(objectWriter.writeValueAsString(wrapper));
+            }
+
+            try (FileWriter writer = new FileWriter(boundaryLocsFile, false)) {
+                GameObjectLoc.BoundaryWrapper wrapper = new GameObjectLoc.BoundaryWrapper();
+                wrapper.setBoundaries(boundaryLocsMap.values());
+                writer.write(objectWriter.writeValueAsString(wrapper));
+            }
+
+            try (FileWriter writer = new FileWriter(npcLocsFile, false)) {
+                NpcLoc.Wrapper wrapper = new NpcLoc.Wrapper();
+                wrapper.setNpclocs(npcLocationMap.values());
+                writer.write(objectWriter.writeValueAsString(wrapper));
+            }
+        }
     }
 
     /**
@@ -313,34 +319,53 @@ public class Util {
 
     public static void prepareData(File dir) {
         try {
+            if (!dir.exists()) {
+                try {
+                    if (!dir.mkdirs()) {
+                        throw new IllegalStateException("Unable to create directory " + dir.getAbsolutePath());
+                    }
+                } catch (Exception ex) {
+                    System.out.println("Unable to create directory " + dir.getAbsolutePath());
+                    return;
+                }
+            }
+
+            Util.workspace = dir;
             sceneryLocationMap.clear();
             boundaryLocsMap.clear();
             npcLocationMap.clear();
             itemLocationMap.clear();
 
-            List<GameObjectLoc> gameObjectLocs = PersistenceManager.load(
-                    Util.class.getResourceAsStream("/data/SceneryLocs.json"),
-                    GameObjectLoc.class
-            );
-            gameObjectLocs.forEach(loc -> sceneryLocationMap.put(loc.getLocation(), loc));
+            sceneryLocsFile = getSceneryLocsFile(dir, "SceneryLocs.json");
+            boundaryLocsFile = getSceneryLocsFile(dir, "BoundaryLocs.json");
+            npcLocsFile = getSceneryLocsFile(dir, "NpcLocs.json");
+            itemLocsFile = getSceneryLocsFile(dir, "GroundItems.json");
 
-            List<GameObjectLoc> boundaryLocs = PersistenceManager.load(
-                    Util.class.getResourceAsStream("/data/BoundaryLocs.json"),
-                    GameObjectLoc.class
-            );
-            boundaryLocs.forEach(loc -> boundaryLocsMap.put(loc.getLocation(), loc));
+            ObjectMapper objectMapper = new ObjectMapper();
 
-            List<NpcLoc> npcLocs = PersistenceManager.load(
-                    Util.class.getResourceAsStream("/data/NpcLocs.json"),
-                    NpcLoc.class
+            PersistenceManager.load(
+                    new FileInputStream(sceneryLocsFile),
+                    GameObjectLoc.SceneryWrapper.class
+            ).ifPresent(
+                    locs -> locs.getSceneries().forEach(loc -> sceneryLocationMap.put(loc.getLocation().toAWT(), loc))
             );
-            npcLocs.forEach(loc -> npcLocationMap.put(loc.getStart(), loc));
 
-            List<ItemLoc> itemLocs = PersistenceManager.load(
-                    Util.class.getResourceAsStream("/data/GroundItems.json"),
-                    ItemLoc.class
+            PersistenceManager.load(
+                    new FileInputStream(boundaryLocsFile),
+                    GameObjectLoc.BoundaryWrapper.class
+            ).ifPresent(
+                    locs -> locs.getBoundaries().forEach(loc -> boundaryLocsMap.put(loc.getLocation().toAWT(), loc))
             );
-            itemLocs.forEach(loc -> itemLocationMap.put(loc.getLocation(), loc));
+
+            PersistenceManager.load(
+                    new FileInputStream(npcLocsFile),
+                    NpcLoc.Wrapper.class
+            ).ifPresent(locs -> locs.getNpclocs().forEach(loc -> npcLocationMap.put(loc.getStart().toAWT(), loc)));
+
+            PersistenceManager.load(
+                    new FileInputStream(itemLocsFile),
+                    ItemLoc.Wrapper.class
+            ).ifPresent(locs -> locs.getGrounditems().forEach(loc -> itemLocationMap.put(loc.getLocation().toAWT(), loc)));
 
             // Getting all the IDs - names, for objects/npcs/items in the
             // hashmaps.
@@ -367,6 +392,15 @@ public class Util {
         } catch (Exception e) {
             error(e);
         }
+    }
+
+    private static File getSceneryLocsFile(File dir, String fileName) throws IOException {
+        final File sceneryLocs = new File(dir, fileName);
+        if (!sceneryLocs.exists()) {
+            InputStream defaultSceneries = Util.class.getResourceAsStream("/data/" + fileName);
+            FileUtils.copyInputStreamToFile(defaultSceneries, sceneryLocs);
+        }
+        return sceneryLocs;
     }
 
     public static String[] getSectionNames() {
@@ -423,6 +457,13 @@ public class Util {
         );
     }
 
+    public static Point gridPointFromRSCCoords(Point coords) {
+        return new Point(
+                coords.x - (Util.sectorX - 48) * 48,
+                coords.y - (48 * (Util.sectorY - 37)) - 944 * Util.sectorH
+        );
+    }
+
     public static Polygon constructPolygon(List<Point> points) {
         // Construct polygon
         int nPoints = points.size();
@@ -446,10 +487,10 @@ public class Util {
     public static Map<Integer, String> objectNames = new HashMap<>();
     public static Map<Integer, String> npcNames = new HashMap<>();
     public static Map<Integer, String> itemNames = new HashMap<>();
-    public static Map<Point, ItemLoc> itemLocationMap = Collections.synchronizedMap(new HashMap<>());
-    public static Map<Point, NpcLoc> npcLocationMap = Collections.synchronizedMap(new HashMap<>());
-    public static Map<Point, GameObjectLoc> sceneryLocationMap = Collections.synchronizedMap(new HashMap<>());
-    public static Map<Point, GameObjectLoc> boundaryLocsMap = Collections.synchronizedMap(new HashMap<>());
+    public static Map<Point, ItemLoc> itemLocationMap = Collections.synchronizedMap(new LinkedHashMap<>());
+    public static Map<Point, NpcLoc> npcLocationMap = Collections.synchronizedMap(new LinkedHashMap<>());
+    public static Map<Point, GameObjectLoc> sceneryLocationMap = Collections.synchronizedMap(new LinkedHashMap<>());
+    public static Map<Point, GameObjectLoc> boundaryLocsMap = Collections.synchronizedMap(new LinkedHashMap<>());
 
     public static State STATE = State.NOT_LOADED;
     private static long lastMilli = 0;

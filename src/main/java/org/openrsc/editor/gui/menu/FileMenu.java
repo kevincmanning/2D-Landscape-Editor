@@ -3,10 +3,10 @@ package org.openrsc.editor.gui.menu;
 import org.openrsc.editor.Actions;
 import org.openrsc.editor.SelectSection;
 import org.openrsc.editor.gui.GuiUtils;
+import smile.swing.FileChooser;
 
 import javax.swing.JFileChooser;
 import javax.swing.JMenuItem;
-import javax.swing.filechooser.FileFilter;
 import java.io.File;
 import java.util.function.Consumer;
 
@@ -55,20 +55,12 @@ public class FileMenu extends BaseMenu {
         openDataDir.setText("Open Data Directory");
         openDataDir.addActionListener(evt -> {
             final JFileChooser fc = new JFileChooser();
-            fc.setFileFilter(new FileFilter() {
-                @Override
-                public boolean accept(File file) {
-                    return file.isDirectory();
-                }
-
-                @Override
-                public String getDescription() {
-                    return "";
-                }
-            });
+            fc.setFileSelectionMode(FileChooser.DIRECTORIES_ONLY);
             fc.setDialogTitle("Locate Landscape.orsc");
             if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                 Actions.onOpenDataDir(fc.getSelectedFile());
+                SelectSection ss = new SelectSection();
+                ss.setVisible(true);
             }
         });
         add(openDataDir);

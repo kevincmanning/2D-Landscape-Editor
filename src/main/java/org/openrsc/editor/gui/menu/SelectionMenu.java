@@ -4,9 +4,11 @@ import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import org.openrsc.editor.event.EditorToolSelectedEvent;
 import org.openrsc.editor.event.EventBusFactory;
+import org.openrsc.editor.event.action.ClearObjectsAction;
 import org.openrsc.editor.event.action.CreateBuildingAction;
 import org.openrsc.editor.event.action.GenerateLandscapeAction;
 import org.openrsc.editor.event.selection.SelectRegionUpdateEvent;
+import org.openrsc.editor.gui.dialog.ClearObjectsDialog;
 import org.openrsc.editor.gui.dialog.CreateBuildingDialog;
 import org.openrsc.editor.gui.dialog.GenerateLandscapeDialog;
 import org.openrsc.editor.model.EditorTool;
@@ -53,6 +55,20 @@ public class SelectionMenu extends BaseMenu {
                 )
         );
         add(generateLandscape);
+
+        JMenuItem deleteObjects = new JMenuItem();
+        deleteObjects.setText("Clear Objects");
+        deleteObjects.addActionListener(evt ->
+                new ClearObjectsDialog(
+                        type -> eventBus.post(
+                                ClearObjectsAction.builder()
+                                        .objectType(type)
+                                        .selectRegion(selectRegion)
+                                        .build()
+                        )
+                )
+        );
+        add(deleteObjects);
     }
 
     @Subscribe

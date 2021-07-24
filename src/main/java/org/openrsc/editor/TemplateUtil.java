@@ -35,15 +35,31 @@ public class TemplateUtil {
         return builder.build();
     }
 
+    public static double getResolvedIntensity(double distanceFromOrigin, double brushIntensity) {
+        return Math.max(brushIntensity, 1 - distanceFromOrigin) * brushIntensity;
+    }
+
     public static void applyBrush(Tile tile, TerrainTemplate template) {
+        applyBrush(tile, template, 0, 1.0);
+    }
+
+    public static void applyBrush(Tile tile, TerrainTemplate template, double distance, double intensity) {
+        double weight = getResolvedIntensity(
+                distance,
+                intensity
+        );
         if (tile != null && template != null) {
             template.getValues().forEach((property, value) -> {
                 switch (property) {
                     case GROUND_TEXTURE:
-                        tile.setGroundTexture(value.byteValue());
+                        tile.setGroundTexture(
+                                weightValue(tile.getGroundTextureInt(), value, weight).byteValue()
+                        );
                         break;
                     case GROUND_OVERLAY:
-                        tile.setGroundOverlay(value.byteValue());
+                        tile.setGroundOverlay(
+                                weightValue(tile.getGroundOverlayInt(), value, weight).byteValue()
+                        );
                         break;
                     case WALL_DIAGONAL:
                         tile.setDiagonalWalls(value);
@@ -55,7 +71,9 @@ public class TemplateUtil {
                         tile.setNorthWall(value.byteValue());
                         break;
                     case GROUND_ELEVATION:
-                        tile.setGroundElevation(value.byteValue());
+                        tile.setGroundElevation(
+                                weightValue(tile.getGroundElevationInt(), value, weight).byteValue()
+                        );
                         break;
                     case ROOF_TEXTURE:
                         tile.setRoofTexture(value.byteValue());
@@ -64,5 +82,9 @@ public class TemplateUtil {
             });
             Util.sectorModified = true;
         }
+    }
+
+    public static Integer weightValue(int previousValue, int updatedValue, double weight) {
+        return (int) ((previousValue * (1 - weight)) + (updatedValue * weight));
     }
 }

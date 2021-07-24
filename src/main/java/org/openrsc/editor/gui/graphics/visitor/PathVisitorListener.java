@@ -5,15 +5,22 @@ import org.openrsc.editor.model.Tile;
 import java.util.List;
 
 public abstract class PathVisitorListener {
-    protected abstract void onNorthWallVisited(Tile tile);
+    protected void onNorthWallVisited(Tile tile) {
+    }
 
-    protected abstract void onEastWallVisited(Tile tile);
+    protected void onEastWallVisited(Tile tile) {
+    }
 
-    protected abstract void onForwardDiagonalVisited(Tile tile);
+    protected void onForwardDiagonalVisited(Tile tile) {
+    }
 
-    protected abstract void onBackwardDiagonalVisited(Tile tile);
+    protected void onBackwardDiagonalVisited(Tile tile) {
+    }
 
-    protected abstract void onFillTileVisited(Tile tile);
+    protected void onFillTileVisited(Tile tile) {
+    }
 
-    protected abstract void onComplete(List<Tile> visited);
+    protected void onComplete(List<Tile> visited) {
+    }
+
 }

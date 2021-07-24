@@ -24,6 +24,9 @@ public class StampToolDelegate extends ToolDelegate {
     private static final EventBus eventBus = EventBusFactory.getEventBus();
 
     private List<Tile> hoverTiles = Collections.emptyList();
+    private Tile originTile = null;
+    private Tile previousTile = new Tile();
+    private boolean tileChangedSinceLastApply = false;
     private final EditorCanvas editorCanvas;
     private TerrainTemplate currentTemplate;
 
@@ -38,6 +41,11 @@ public class StampToolDelegate extends ToolDelegate {
 
         // Translate origin back half distance to center main point, then add all points covering stamp size
         Point hoveredGridPosition = Util.mouseCoordsToGridCoords(cursorCoords);
+        originTile = editorCanvas.getTileByGridCoords(hoveredGridPosition);
+        if (previousTile.getGridX() != originTile.getGridX() || previousTile.getGridY() != originTile.getGridY()) {
+            previousTile = originTile;
+            tileChangedSinceLastApply = true;
+        }
         int xOrigin = hoveredGridPosition.x - stampSize / 2;
         int yOrigin = hoveredGridPosition.y - stampSize / 2;
 
@@ -50,6 +58,19 @@ public class StampToolDelegate extends ToolDelegate {
         }
 
         hoverTiles = tiles;
+    }
+
+    private void applyBrush(Tile tile) {
+        double distanceFromOrigin = Math.sqrt(
+                Math.pow(Math.abs(originTile.getGridX()) - Math.abs(tile.getGridX()), 2)
+                        + Math.pow(Math.abs(originTile.getGridY()) - Math.abs(tile.getGridY()), 2)
+        );
+        TemplateUtil.applyBrush(
+                tile,
+                currentTemplate,
+                distanceFromOrigin / (Util.stampSize / 2.0),
+                Util.brushIntensity / 100.0
+        );
     }
 
     @Override
@@ -72,7 +93,7 @@ public class StampToolDelegate extends ToolDelegate {
     @Override
     public void mouseClicked(MouseEvent evt) {
         calcStampCursor(evt.getPoint(), Util.stampSize);
-        hoverTiles.forEach(editorCanvas::applyBrush);
+        hoverTiles.forEach(this::applyBrush);
     }
 
     @Override
@@ -98,7 +119,10 @@ public class StampToolDelegate extends ToolDelegate {
     @Override
     public void mouseDragged(MouseEvent evt) {
         calcStampCursor(evt.getPoint(), Util.stampSize);
-        hoverTiles.forEach(editorCanvas::applyBrush);
+        if (tileChangedSinceLastApply) {
+            hoverTiles.forEach(this::applyBrush);
+            tileChangedSinceLastApply = false;
+        }
     }
 
     @Override

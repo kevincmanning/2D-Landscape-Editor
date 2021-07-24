@@ -13,7 +13,7 @@ import java.awt.event.MouseMotionListener;
 
 @Getter
 public abstract class ToolDelegate implements MouseListener, MouseMotionListener {
-    private static EventBus eventBus = EventBusFactory.getEventBus();
+    private static final EventBus eventBus = EventBusFactory.getEventBus();
 
     private final EditorTool tool;
 
@@ -24,16 +24,18 @@ public abstract class ToolDelegate implements MouseListener, MouseMotionListener
 
     public abstract void render(Graphics2D g);
 
-    public abstract void onToolMount();
+    public void onToolMount() {
+    }
 
-    public abstract void onToolUnmount();
+    public void onToolUnmount() {
+    }
 
     @Subscribe
     private void onEditorToolSelected(EditorToolSelectedEvent evt) {
         if (!tool.equals(evt.getEditorTool())) {
-            this.onToolUnmount();
+            onToolUnmount();
         } else {
-            this.onToolMount();
+            onToolMount();
         }
     }
 }

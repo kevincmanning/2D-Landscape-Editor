@@ -6,23 +6,19 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collections;
-import java.util.List;
+import java.util.Optional;
 
 public class PersistenceManager {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    public static <T> List<T> load(InputStream stream, Class<T> type) {
+    public static <T> Optional<T> load(InputStream stream, Class<T> type) {
         try {
             BufferedInputStream is = new BufferedInputStream(stream);
-            return objectMapper.readValue(
-                    is,
-                    objectMapper.getTypeFactory().constructCollectionType(List.class, type)
-            );
+            return Optional.of(objectMapper.readValue(is, type));
         } catch (IOException ioe) {
             ioe.printStackTrace();
         }
-        return Collections.emptyList();
+        return Optional.empty();
     }
 
     public static void write(File file, Object o) {

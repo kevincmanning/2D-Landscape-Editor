@@ -29,26 +29,6 @@ public class GenerateLandscapeVisitorListener extends PathVisitorListener {
     }
 
     @Override
-    protected void onNorthWallVisited(Tile tile) {
-
-    }
-
-    @Override
-    protected void onEastWallVisited(Tile tile) {
-
-    }
-
-    @Override
-    protected void onForwardDiagonalVisited(Tile tile) {
-
-    }
-
-    @Override
-    protected void onBackwardDiagonalVisited(Tile tile) {
-
-    }
-
-    @Override
     protected void onFillTileVisited(Tile tile) {
         Optional.ofNullable(terrainGenerator).ifPresent(generator -> {
             float data = generator.getData(tile.getGridX(), tile.getGridY());

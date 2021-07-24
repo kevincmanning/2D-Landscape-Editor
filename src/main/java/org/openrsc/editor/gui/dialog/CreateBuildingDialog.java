@@ -55,8 +55,8 @@ public class CreateBuildingDialog extends JFrame {
             }
         });
         walls.setSelectedItem(WallDefinition.STONE_WALL);
-        add(wallsLabel);
-        add(walls);
+        panel.add(wallsLabel);
+        panel.add(walls);
 
         JLabel floorLabel = new JLabel("Floor");
         floorLabel.setAlignmentX(SwingConstants.LEFT);

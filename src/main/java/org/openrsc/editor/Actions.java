@@ -59,12 +59,36 @@ public class Actions {
         changeSectorHeight(SectorHeight.SECOND_LEVEL);
     }
 
+    public static void onUpOneFloor() {
+        if (Util.sectorH < SectorHeight.SECOND_LEVEL.getHeight()) {
+            changeSectorHeight(Util.sectorH + 1);
+        } else if (Util.sectorH == SectorHeight.UNDERGROUND.getHeight()) {
+            changeSectorHeight(SectorHeight.GROUND_FLOOR);
+        } else if (Util.sectorH > SectorHeight.UNDERGROUND.getHeight()) {
+            changeSectorHeight(Util.sectorH - 1);
+        }
+    }
+
+    public static void onDownOneFloor() {
+        if (Util.sectorH == SectorHeight.GROUND_FLOOR.getHeight()) {
+            changeSectorHeight(SectorHeight.UNDERGROUND);
+        } else if (Util.sectorH <= SectorHeight.SECOND_LEVEL.getHeight()) {
+            changeSectorHeight(Util.sectorH - 1);
+        } else {
+            changeSectorHeight(Util.sectorH + 1);
+        }
+    }
+
     public static void onJumpToCoords() {
         Util.handleJumpToCoords();
     }
 
     public static void changeSectorHeight(SectorHeight sectorHeight) {
         int height = sectorHeight.getHeight();
+        changeSectorHeight(height);
+    }
+
+    private static void changeSectorHeight(int height) {
         if (Util.sectorH != height && Util.STATE == Util.State.RENDER_READY) {
             Util.sectorH = height;
             Util.STATE = Util.State.CHANGING_SECTOR;
@@ -112,5 +136,6 @@ public class Actions {
 
     public static void onOpenDataDir(File dir) {
         Util.prepareData(dir);
+        Util.currentFile = new File(dir, "Landscape.orsc");
     }
 }

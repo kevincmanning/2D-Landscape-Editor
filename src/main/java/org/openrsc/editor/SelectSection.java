@@ -1,7 +1,13 @@
 package org.openrsc.editor;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -54,14 +60,12 @@ public class SelectSection extends JDialog implements ActionListener {
         varrock.setVisible(true);
         varrock.setLocation(155, locY);
         varrock.setSize(120, 30);
-        varrock.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setVisible(false);
-                Util.sectorH = 0;
-                Util.sectorX = 50;
-                Util.sectorY = 47;
-                Util.STATE = Util.State.LOADED;
-            }
+        varrock.addActionListener(evt -> {
+            setVisible(false);
+            Util.sectorH = 0;
+            Util.sectorX = 50;
+            Util.sectorY = 47;
+            Util.STATE = Util.State.LOADED;
         });
 
         locY += 37;
@@ -70,14 +74,12 @@ public class SelectSection extends JDialog implements ActionListener {
         falador.setVisible(true);
         falador.setLocation(155, locY);
         falador.setSize(120, 30);
-        falador.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setVisible(false);
-                Util.sectorH = 0;
-                Util.sectorX = 54;
-                Util.sectorY = 48;
-                Util.STATE = Util.State.LOADED;
-            }
+        falador.addActionListener(evt -> {
+            setVisible(false);
+            Util.sectorH = 0;
+            Util.sectorX = 54;
+            Util.sectorY = 48;
+            Util.STATE = Util.State.LOADED;
         });
 
         locY += 37;
@@ -86,14 +88,12 @@ public class SelectSection extends JDialog implements ActionListener {
         draynor.setVisible(true);
         draynor.setLocation(155, locY);
         draynor.setSize(120, 30);
-        draynor.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setVisible(false);
-                Util.sectorH = 0;
-                Util.sectorX = 52;
-                Util.sectorY = 50;
-                Util.STATE = Util.State.LOADED;
-            }
+        draynor.addActionListener(evt -> {
+            setVisible(false);
+            Util.sectorH = 0;
+            Util.sectorX = 52;
+            Util.sectorY = 50;
+            Util.STATE = Util.State.LOADED;
         });
 
         locY += 37;
@@ -102,14 +102,12 @@ public class SelectSection extends JDialog implements ActionListener {
         lumbridge.setVisible(true);
         lumbridge.setLocation(155, locY);
         lumbridge.setSize(120, 30);
-        lumbridge.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setVisible(false);
-                Util.sectorH = 0;
-                Util.sectorX = 50;
-                Util.sectorY = 50;
-                Util.STATE = Util.State.LOADED;
-            }
+        lumbridge.addActionListener(evt -> {
+            setVisible(false);
+            Util.sectorH = 0;
+            Util.sectorX = 50;
+            Util.sectorY = 50;
+            Util.STATE = Util.State.LOADED;
         });
 
         locY += 37;
@@ -118,14 +116,12 @@ public class SelectSection extends JDialog implements ActionListener {
         ardougne.setVisible(true);
         ardougne.setLocation(155, locY);
         ardougne.setSize(120, 30);
-        ardougne.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setVisible(false);
-                Util.sectorH = 0;
-                Util.sectorX = 59;
-                Util.sectorY = 49;
-                Util.STATE = Util.State.LOADED;
-            }
+        ardougne.addActionListener(evt -> {
+            setVisible(false);
+            Util.sectorH = 0;
+            Util.sectorX = 59;
+            Util.sectorY = 49;
+            Util.STATE = Util.State.LOADED;
         });
 
         locY += 37;
@@ -134,14 +130,12 @@ public class SelectSection extends JDialog implements ActionListener {
         karamaja.setVisible(true);
         karamaja.setLocation(155, locY);
         karamaja.setSize(120, 30);
-        karamaja.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setVisible(false);
-                Util.sectorH = 0;
-                Util.sectorX = 55;
-                Util.sectorY = 51;
-                Util.STATE = Util.State.LOADED;
-            }
+        karamaja.addActionListener(evt -> {
+            setVisible(false);
+            Util.sectorH = 0;
+            Util.sectorX = 55;
+            Util.sectorY = 51;
+            Util.STATE = Util.State.LOADED;
         });
 
         locY += 37;
@@ -150,14 +144,12 @@ public class SelectSection extends JDialog implements ActionListener {
         alkharid.setVisible(true);
         alkharid.setLocation(155, locY);
         alkharid.setSize(120, 30);
-        alkharid.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setVisible(false);
-                Util.sectorH = 0;
-                Util.sectorX = 49;
-                Util.sectorY = 51;
-                Util.STATE = Util.State.LOADED;
-            }
+        alkharid.addActionListener(evt -> {
+            setVisible(false);
+            Util.sectorH = 0;
+            Util.sectorX = 49;
+            Util.sectorY = 51;
+            Util.STATE = Util.State.LOADED;
         });
 
         locY += 37;

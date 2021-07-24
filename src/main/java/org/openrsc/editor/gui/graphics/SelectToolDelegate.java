@@ -5,6 +5,7 @@ import com.google.common.eventbus.Subscribe;
 import org.openrsc.editor.Util;
 import org.openrsc.editor.event.EditorToolSelectedEvent;
 import org.openrsc.editor.event.EventBusFactory;
+import org.openrsc.editor.event.action.ClearObjectsAction;
 import org.openrsc.editor.event.action.ConvertPathToSelectionAction;
 import org.openrsc.editor.event.action.CreateBuildingAction;
 import org.openrsc.editor.event.action.GenerateLandscapeAction;
@@ -13,8 +14,10 @@ import org.openrsc.editor.gui.graphics.stroke.DashedStrokeGenerator;
 import org.openrsc.editor.gui.graphics.visitor.CreateBuildingVisitorListener;
 import org.openrsc.editor.gui.graphics.visitor.GenerateLandscapeVisitorListener;
 import org.openrsc.editor.gui.graphics.visitor.PathVisitor;
+import org.openrsc.editor.gui.graphics.visitor.PathVisitorListener;
 import org.openrsc.editor.model.EditorTool;
 import org.openrsc.editor.model.SelectRegion;
+import org.openrsc.editor.model.Tile;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -104,25 +107,11 @@ public class SelectToolDelegate extends ToolDelegate {
             Polygon polygon = Util.constructPolygon(
                     points.stream().map(editorCanvas::gridPointToPixelPoint).collect(Collectors.toList())
             );
-//            for (Point point : points) {
-//                Optional.ofNullable(editorCanvas.getTileByGridCoords(point.x, point.y))
-//                        .ifPresent(editorCanvas::drawTileBorder);
-//            }
 
             g.setColor(Color.WHITE);
             g.setStroke(dashedStrokeGenerator.get());
             g.draw(polygon);
         }
-    }
-
-    @Override
-    public void onToolMount() {
-
-    }
-
-    @Override
-    public void onToolUnmount() {
-
     }
 
     public void setSelectRegion(SelectRegion selectRegion) {
@@ -157,6 +146,47 @@ public class SelectToolDelegate extends ToolDelegate {
         Thread t = new Thread(() -> pathVisitor.visit(
                 evt.getSelectRegion().getPoints(),
                 new GenerateLandscapeVisitorListener(evt.getConfiguration())
+        ));
+        t.start();
+    }
+
+    @Subscribe
+    public void onClearObjectsAction(ClearObjectsAction evt) {
+        ClearObjectsAction.Type type = evt.getObjectType();
+        PathVisitor pathVisitor = new PathVisitor(editorCanvas);
+        Thread t = new Thread(() -> pathVisitor.visit(
+                evt.getSelectRegion().getPoints(),
+                new PathVisitorListener() {
+                    @Override
+                    protected void onFillTileVisited(Tile tile) {
+                        Point location = tile.getRSCCoords();
+                        if (location != null) {
+                            switch (type) {
+                                case ALL:
+                                    Util.boundaryLocsMap.remove(location);
+                                    Util.sceneryLocationMap.remove(location);
+                                    Util.itemLocationMap.remove(location);
+                                    Util.npcLocationMap.remove(location);
+                                    break;
+                                case BOUNDARY:
+                                    Util.boundaryLocsMap.remove(location);
+                                    break;
+                                case SCENERY:
+                                    Util.sceneryLocationMap.remove(location);
+                                    break;
+                                case GROUND_ITEM:
+                                    Util.itemLocationMap.remove(location);
+                                    break;
+                                case NPC:
+                                    Util.npcLocationMap.remove(location);
+                                    break;
+                                default:
+                                    throw new IllegalArgumentException("Unsupported type to remove " + type);
+
+                            }
+                        }
+                    }
+                }
         ));
         t.start();
     }

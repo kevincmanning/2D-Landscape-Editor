@@ -40,6 +40,12 @@ dependencies {
 
     testCompileOnly "org.projectlombok:lombok:1.18.16"
     testAnnotationProcessor "org.projectlombok:lombok:1.18.16"
+
+    // Apache commons
+    compile "org.apache.commons:commons-collections4:4.0"
+    compile "org.apache.commons:commons-lang3:3.12.0"
+    compile "org.apache.commons:commons-compress:1.18"
+    compile "commons-io:commons-io:2.8.0"
 }
 
 task copyJar(type: Copy) {

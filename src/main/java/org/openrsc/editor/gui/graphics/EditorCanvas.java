@@ -9,7 +9,6 @@ import org.openrsc.editor.event.EditorToolSelectedEvent;
 import org.openrsc.editor.event.EventBusFactory;
 import org.openrsc.editor.event.TerrainPresetSelectedEvent;
 import org.openrsc.editor.event.TerrainTemplateUpdateEvent;
-import org.openrsc.editor.gui.graphics.visitor.PathVisitor;
 import org.openrsc.editor.model.EditorTool;
 import org.openrsc.editor.model.Tile;
 import org.openrsc.editor.model.configuration.DisplayConfiguration;
@@ -50,17 +49,19 @@ public class EditorCanvas extends Canvas implements Runnable {
     private final StampToolDelegate stampToolDelegate;
     private final ToolDelegate inspectToolDelegate;
     private final PlaceDoorWindowDelegate placeDoorWindowDelegate;
+    private final PlaceEntityDelegate placeEntityDelegate;
 
-    public static Tile[][] tileGrid;
     private Graphics2D g2d;
     private BufferedImage offscreenImage;
     public static Graphics2D offscreenGraphics;
     private ToolDelegate currentToolDelegate;
     private DisplayConfiguration displayConfiguration;
 
+    public static Tile[][] tileGrid;
+    public static Point viewport;
+
     // Controlled by tool delegates
     public TerrainTemplate currentTemplate = TerrainTemplate.builder().build();
-    private PathVisitor pathVisitor;
 
     public EditorCanvas() {
         super();
@@ -69,6 +70,7 @@ public class EditorCanvas extends Canvas implements Runnable {
         this.stampToolDelegate = new StampToolDelegate(this);
         this.inspectToolDelegate = new InspectToolDelegate(this);
         this.placeDoorWindowDelegate = new PlaceDoorWindowDelegate(this);
+        this.placeEntityDelegate = new PlaceEntityDelegate(this);
         this.displayConfiguration = DisplayConfiguration.DEFAULT_DISPLAY_CONFIGURATION;
 
         init();
@@ -97,7 +99,6 @@ public class EditorCanvas extends Canvas implements Runnable {
             setLocation(0, 60);
             setSize(new Dimension(GRID_PIXEL_SIZE, GRID_PIXEL_SIZE));
             setBackground(Color.BLACK);
-            Util.prepareData(null);
         } catch (Exception e) {
             Util.error(e);
         }
@@ -180,7 +181,10 @@ public class EditorCanvas extends Canvas implements Runnable {
                     tile.setID(count);
                     tile.setGridX(i);
                     tile.setGridY(j);
-                    tile = tile.unpack(Util.buffer, tile);
+                    try {
+                        tile = tile.unpack(Util.buffer, tile);
+                    } catch (Exception ignored) {
+                    }
                     tile.setShape(new Rectangle(tile.getX(), tile.getY(), TILE_SIZE, TILE_SIZE));
                     count++;
                 }
@@ -343,6 +347,9 @@ public class EditorCanvas extends Canvas implements Runnable {
                 break;
             case PLACE_DOOR_WINDOW:
                 setCurrentTool(placeDoorWindowDelegate);
+                break;
+            case PLACE_ENTITY:
+                setCurrentTool(placeEntityDelegate);
                 break;
         }
     }

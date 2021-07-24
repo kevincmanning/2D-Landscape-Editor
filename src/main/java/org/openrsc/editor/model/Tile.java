@@ -6,7 +6,6 @@ import org.openrsc.editor.Util;
 import org.openrsc.editor.model.data.GameObjectLoc;
 import org.openrsc.editor.model.data.ItemLoc;
 import org.openrsc.editor.model.data.NpcLoc;
-import org.openrsc.editor.model.definition.WallDefinition;
 
 import java.awt.Point;
 import java.awt.Shape;
@@ -31,13 +30,13 @@ public class Tile {
     private int x = -1;
     private int y = -1;
     private Shape shape;
-    private byte groundElevation = -1;
-    private byte groundTexture = -1;
-    private byte groundOverlay = -1;
-    private byte roofTexture = -1;
-    private byte rightBorderWall = -1;
-    private byte topBorderWall = -1;
-    private int diagonalWalls = -1;
+    private byte groundElevation = 0;
+    private byte groundTexture = 0;
+    private byte groundOverlay = 0;
+    private byte roofTexture = 0;
+    private byte rightBorderWall = 0;
+    private byte topBorderWall = 0;
+    private int diagonalWalls = 0;
 
     public int getGroundElevationInt() {
         return groundElevation & 0xff;
@@ -211,11 +210,6 @@ public class Tile {
         tile.rightBorderWall = in.get();
         tile.topBorderWall = in.get();
         tile.diagonalWalls = in.getInt();
-        if (
-                !WallDefinition.NORMAL.containsKey(topBorderWall)
-        ) {
-            
-        }
         return tile;
     }
 
