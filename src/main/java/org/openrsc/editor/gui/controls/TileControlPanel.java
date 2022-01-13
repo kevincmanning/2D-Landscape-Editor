@@ -8,7 +8,7 @@ import org.openrsc.editor.Util;
 import org.openrsc.editor.event.EventBusFactory;
 import org.openrsc.editor.event.TerrainPresetSelectedEvent;
 import org.openrsc.editor.event.TerrainTemplateUpdateEvent;
-import org.openrsc.editor.model.brush.BrushOption;
+import org.openrsc.editor.model.brush.BrushPresets;
 import org.openrsc.editor.model.template.TerrainProperty;
 import org.openrsc.editor.model.template.TerrainTemplate;
 
@@ -38,7 +38,7 @@ public class TileControlPanel extends JPanel {
 
     private final Map<TerrainProperty, TerrainPropertySlider> terrainPropertySliderMap;
     private JComboBox<TerrainProperty> properties;
-    private JComboBox<BrushOption> brushes;
+    private JComboBox<BrushPresets> brushes;
     private JButton addTerrainProp;
 
     public TileControlPanel(int x, int y) {
@@ -112,7 +112,7 @@ public class TileControlPanel extends JPanel {
                             TerrainTemplate.builder().value(property, 0).build()
                     )
             );
-            brushes.setSelectedItem(BrushOption.CUSTOM);
+            brushes.setSelectedItem(BrushPresets.CUSTOM);
         });
         addPanel.add(properties);
         addPanel.add(addTerrainProp);
@@ -127,11 +127,11 @@ public class TileControlPanel extends JPanel {
         loadPresetLabel.setPreferredSize(new Dimension(150, 15));
         presetsPanel.add(loadPresetLabel);
 
-        brushes = new JComboBox<>(BrushOption.values());
-        brushes.setSelectedItem(BrushOption.NONE);
+        brushes = new JComboBox<>(BrushPresets.values());
+        brushes.setSelectedItem(BrushPresets.NONE);
         brushes.addActionListener(evt -> {
-            BrushOption option = (BrushOption) brushes.getSelectedItem();
-            if (option != BrushOption.CUSTOM) {
+            BrushPresets option = (BrushPresets) brushes.getSelectedItem();
+            if (option != BrushPresets.CUSTOM) {
                 eventBus.post(new TerrainPresetSelectedEvent(
                         Objects.requireNonNull(option).getTemplate()
                 ));
@@ -207,7 +207,7 @@ public class TileControlPanel extends JPanel {
     @Subscribe
     public void onTerrainTemplateUpdate(TerrainTemplateUpdateEvent event) {
         currentTemplate = TemplateUtil.merge(currentTemplate, event);
-        brushes.setSelectedItem(BrushOption.CUSTOM);
+        brushes.setSelectedItem(BrushPresets.CUSTOM);
         syncPropertySliders();
     }
 }
